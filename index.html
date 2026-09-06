@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AJonny Shop - Premium Seller Partner Panel</title>
+    
+    <!-- Dependencies -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a0ca3;
+            --primary-light: #e0e8ff;
+            --secondary: #4cc9f0;
+            --accent: #f72585;
+            --success: #2ecc71;
+            --success-light: #e8f8f0;
+            --warning: #f39c12;
+            --warning-light: #fef5e7;
+            --danger: #e74c3c;
+            --danger-light: #fceceb;
+            --bg-body: #f4f7fe;
+            --card-bg: #ffffff;
+            --text-main: #2b3674;
+            --text-muted: #8f9bba;
+            --sidebar-width: 280px;
+            --radius-lg: 20px;
+            --radius-md: 14px;
+            --radius-sm: 10px;
+            --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.08);
+            --shadow-hover: 0 16px 32px -4px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- AUTH & ONBOARDING --- */
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .auth-container::before {
+            content: ''; position: absolute; width: 400px; height: 400px; background: var(--secondary);
+            border-radius: 50%; top: -100px; left: -100px; filter: blur(100px); opacity: 0.5;
+        }
+        .auth-container::after {
+            content: ''; position: absolute; width: 400px; height: 400px; background: var(--accent);
+            border-radius: 50%; bottom: -100px; right: -100px; filter: blur(100px); opacity: 0.5;
+        }
+        .auth-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            padding: 45px 40px;
+            max-width: 480px;
+            width: 100%;
+            position: relative;
+            z-index: 10;
+        }
+        .auth-logo { height: 70px; object-fit: contain; margin-bottom: 20px; }
+        .nav-pills .nav-link {
+            border-radius: var(--radius-sm); color: var(--text-muted); font-weight: 600; padding: 12px; transition: all 0.3s;
+        }
+        .nav-pills .nav-link.active {
+            background-color: var(--primary); color: white !important; box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+        }
+        .form-control-custom {
+            border: 2px solid #e2e8f0; border-radius: var(--radius-sm); padding: 14px 20px; font-weight: 500;
+            color: var(--text-main); background: #f8fafc; transition: all 0.3s;
+        }
+        .form-control-custom:focus {
+            border-color: var(--primary); background: white; box-shadow: 0 0 0 4px var(--primary-light); outline: none;
+        }
+        .btn-premium {
+            background: linear-gradient(to right, var(--primary), #5a75f1);
+            border: none; color: white; border-radius: var(--radius-sm); padding: 14px 20px; font-weight: 700;
+            transition: all 0.3s; box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+        }
+        .btn-premium:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(67, 97, 238, 0.4); color: white; }
+
+        /* --- LAYOUTS --- */
+        .app-view { display: none; }
+        .app-view.active { display: block; animation: fadeIn 0.4s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed; top: 0; left: 0; width: var(--sidebar-width); height: 100vh;
+            background: var(--card-bg); box-shadow: 4px 0 24px rgba(0,0,0,0.02); z-index: 1000;
+            transition: 0.3s ease; display: flex; flex-direction: column;
+            border-right: 1px solid #edf2f7;
+        }
+        .sidebar-header {
+            padding: 30px 25px; border-bottom: 1px solid #edf2f7;
+            display: flex; flex-direction: column; align-items: flex-start;
+        }
+        .sidebar-menu { flex-grow: 1; padding: 20px 15px; overflow-y: auto; }
+        .sidebar-menu::-webkit-scrollbar { width: 5px; }
+        .sidebar-menu::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        .nav-item-link {
+            display: flex; align-items: center; padding: 14px 20px; margin-bottom: 8px;
+            color: var(--text-muted); text-decoration: none; font-weight: 600; font-size: 15px;
+            border-radius: var(--radius-md); transition: all 0.3s;
+        }
+        .nav-item-link:hover { background: #f8fafc; color: var(--primary); transform: translateX(5px); }
+        .nav-item-link.active { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(67, 97, 238, 0.25); }
+        .nav-item-link i { width: 24px; font-size: 18px; display: flex; justify-content: center; margin-right: 12px; }
+
+        .main-content {
+            margin-left: var(--sidebar-width); padding: 40px; min-height: 100vh; transition: 0.3s;
+        }
+
+        /* --- DASHBOARD STATS --- */
+        .stat-card {
+            background: var(--card-bg); border-radius: var(--radius-lg); padding: 25px;
+            box-shadow: var(--shadow-soft); border: 1px solid #edf2f7;
+            display: flex; align-items: center; transition: all 0.3s;
+        }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-hover); }
+        .stat-icon {
+            width: 65px; height: 65px; border-radius: var(--radius-md);
+            display: flex; align-items: center; justify-content: center; font-size: 28px; margin-right: 20px;
+        }
+        .stat-blue { background: var(--primary-light); color: var(--primary); }
+        .stat-green { background: var(--success-light); color: var(--success); }
+        .stat-orange { background: var(--warning-light); color: var(--warning); }
+        .stat-pink { background: var(--danger-light); color: var(--accent); }
+
+        .premium-card {
+            background: var(--card-bg); border-radius: var(--radius-lg); padding: 30px;
+            box-shadow: var(--shadow-soft); border: 1px solid #edf2f7; margin-top: 20px;
+        }
+
+        /* --- 3D INTERACTIVE CARD --- */
+        .tilt-wrapper { perspective: 1200px; }
+        .card-3d {
+            transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+            transform-style: preserve-3d;
+            will-change: transform;
+        }
+        .card-3d:hover {
+            box-shadow: 0 30px 60px -12px rgba(67, 97, 238, 0.25), 0 18px 36px -18px rgba(0,0,0,0.3);
+        }
+        .card-3d-inner {
+            transform: translateZ(30px);
+            transform-style: preserve-3d;
+        }
+        .chart-container-3d {
+            transform: translateZ(40px);
+        }
+
+        /* --- IMGBB UPLOAD AREA --- */
+        .upload-area {
+            border: 2px dashed #b8cbeb;
+            border-radius: 16px;
+            padding: 2rem 1rem;
+            text-align: center;
+            background: rgba(240, 247, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .upload-area.dragover {
+            border-color: var(--primary);
+            background: rgba(67, 97, 238, 0.08);
+            transform: scale(1.01);
+        }
+        .upload-area i {
+            font-size: 3rem;
+            color: var(--primary);
+            opacity: 0.6;
+            margin-bottom: 0.5rem;
+            transition: 0.3s;
+        }
+        .upload-area:hover i {
+            transform: translateY(-5px);
+            opacity: 1;
+        }
+
+        /* --- INVENTORY TABLE --- */
+        .table-custom { width: 100%; border-collapse: separate; border-spacing: 0 12px; }
+        .table-custom th { color: var(--text-muted); font-weight: 600; font-size: 13px; text-transform: uppercase; padding: 0 20px 10px; border: none; }
+        .table-custom td { background: white; padding: 20px; border: none; vertical-align: middle; }
+        .table-custom tr td:first-child { border-top-left-radius: var(--radius-md); border-bottom-left-radius: var(--radius-md); }
+        .table-custom tr td:last-child { border-top-right-radius: var(--radius-md); border-bottom-right-radius: var(--radius-md); }
+        .table-custom tbody tr { box-shadow: 0 2px 10px rgba(0,0,0,0.02); transition: 0.3s; }
+        .table-custom tbody tr:hover { box-shadow: 0 5px 20px rgba(0,0,0,0.06); transform: scale(1.01); }
+        .product-thumb { width: 60px; height: 60px; object-fit: cover; border-radius: var(--radius-sm); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+        /* --- ORDERS UI --- */
+        .order-card {
+            background: white; border-radius: var(--radius-lg); padding: 25px;
+            box-shadow: var(--shadow-soft); border: 1px solid #edf2f7; margin-bottom: 20px;
+            transition: all 0.3s; position: relative; overflow: hidden;
+        }
+        .order-card:hover { border-color: var(--primary-light); box-shadow: var(--shadow-hover); }
+        .order-card::before {
+            content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 4px; background: var(--primary);
+        }
+        .order-card.open-order::before { background: var(--warning); }
+        .order-item-img { width: 50px; height: 50px; object-fit: cover; border-radius: 8px; border: 1px solid #edf2f7; }
+
+        /* --- WALLET UI --- */
+        .wallet-card {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            border-radius: var(--radius-lg); padding: 40px 30px; color: white;
+            box-shadow: 0 15px 35px rgba(67, 97, 238, 0.3); position: relative; overflow: hidden;
+        }
+        .wallet-card::after {
+            content: '\f19c'; font-family: 'Font Awesome 5 Free'; font-weight: 900;
+            position: absolute; right: -20px; bottom: -30px; font-size: 150px; opacity: 0.1; transform: rotate(-15deg);
+        }
+
+        /* --- PROFILE / KYC TABS --- */
+        .kyc-tabs { border-bottom: 2px solid #edf2f7; margin-bottom: 25px; }
+        .kyc-tabs .nav-link {
+            color: var(--text-muted); border: none; font-weight: 600; padding: 15px 20px;
+            border-bottom: 3px solid transparent; border-radius: 0; transition: 0.3s; background: transparent;
+        }
+        .kyc-tabs .nav-link:hover { color: var(--primary); }
+        .kyc-tabs .nav-link.active { color: var(--primary); border-bottom-color: var(--primary); background: transparent; box-shadow: none; }
+        
+        /* --- RESPONSIVE --- */
+        .mobile-header { display: none; }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 20, 55, 0.5); backdrop-filter: blur(4px); z-index: 999; }
+        
+        @media (max-width: 992px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.show { transform: translateX(0); }
+            .sidebar-overlay.show { display: block; }
+            .main-content { margin-left: 0; padding: 20px; }
+            .mobile-header {
+                display: flex; justify-content: space-between; align-items: center;
+                background: white; padding: 15px 20px; border-radius: var(--radius-lg);
+                margin-bottom: 25px; box-shadow: var(--shadow-soft);
+            }
+        }
+
+        /* Loader */
+        .loader-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.8); backdrop-filter: blur(10px);
+            z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .spinner { width: 50px; height: 50px; border: 4px solid var(--primary-light); border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <!-- Loading Overlay -->
+    <div id="loader" class="loader-overlay">
+        <div class="spinner"></div>
+        <h5 class="mt-4 text-main fw-bold">Processing...</h5>
+    </div>
+
+    <!-- 1. AUTHENTICATION VIEW -->
+    <div id="authView" class="app-view auth-container">
+        <div class="auth-card">
+            <div class="text-center mb-4">
+                <img src="https://i.ibb.co/RG5zH3DH/Picsart-26-08-26-00-20-49-360.webp" alt="AJonny Logo" class="auth-logo">
+                <h4 class="fw-bold mt-2 text-main">Seller Partner Hub</h4>
+                <p class="text-muted small">Manage your business and grow your sales exponentially.</p>
+            </div>
+
+            <ul class="nav nav-pills nav-justified mb-4 p-1" style="background: #f1f5f9; border-radius: var(--radius-md);">
+                <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#loginTab">Sign In</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#applyTab">Register</button></li>
+            </ul>
+
+            <div class="tab-content">
+                <!-- Login -->
+                <div class="tab-pane fade show active" id="loginTab">
+                    <form id="loginForm">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted ms-1">Email Address</label>
+                            <input type="email" class="form-control-custom w-100" id="loginEmail" placeholder="partner@example.com" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-muted ms-1">Password</label>
+                            <input type="password" class="form-control-custom w-100" id="loginPassword" placeholder="••••••••" required>
+                        </div>
+                        <button type="submit" class="btn-premium w-100">Access Dashboard <i class="fas fa-arrow-right ms-2"></i></button>
+                    </form>
+                </div>
+
+                <!-- Registration -->
+                <div class="tab-pane fade" id="applyTab">
+                    <form id="sellerApplyForm">
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <input type="text" class="form-control-custom w-100" id="s_bizName" placeholder="Business Name" required>
+                            </div>
+                            <div class="col-6">
+                                <input type="text" class="form-control-custom w-100" id="s_ownerName" placeholder="Owner Name" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <input type="email" class="form-control-custom w-100" id="s_email" placeholder="Business Email" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="tel" class="form-control-custom w-100" id="s_mobile" placeholder="Mobile Number" required>
+                        </div>
+                        <div class="mb-4">
+                            <input type="password" class="form-control-custom w-100" id="s_password" placeholder="Create Secure Password" required>
+                        </div>
+                        <button type="submit" class="btn-premium w-100" style="background: linear-gradient(to right, var(--text-main), #1a2035);">Create Account & KYC</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. PENDING APPROVAL VIEW -->
+    <div id="pendingView" class="app-view auth-container">
+        <div class="auth-card text-center text-main">
+            <div class="mb-4 d-inline-flex align-items-center justify-content-center" style="width:100px; height:100px; border-radius:50%; background:var(--warning-light); color:var(--warning);">
+                <i class="fas fa-user-clock fa-3x"></i>
+            </div>
+            <h3 class="fw-bold mb-2">Account Under Review</h3>
+            <p class="text-muted mb-4">Your seller account is currently being verified by the AJonny Shop Admin team. Please complete your KYC Profile if you haven't yet.</p>
+            
+            <div id="rejectionAlert" class="alert alert-danger fw-bold rounded-3 shadow-sm mb-4" style="display:none; text-align:left;">
+                <i class="fas fa-exclamation-triangle me-2"></i> <span id="rejectionText"></span>
+            </div>
+            
+            <button class="btn-premium w-100 mb-3" onclick="app.accessProfileWhilePending()">Complete / Edit KYC Profile</button>
+            <button class="btn btn-light w-100 fw-bold py-3 rounded-3 text-muted" onclick="app.logout()">Logout</button>
+        </div>
+    </div>
+
+    <!-- 3. MAIN SELLER DASHBOARD -->
+    <div id="sellerView" class="app-view">
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="app.toggleSidebar()"></div>
+
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="https://i.ibb.co/RG5zH3DH/Picsart-26-08-26-00-20-49-360.webp" alt="AJonny Shop" style="height: 50px; object-fit: contain;">
+                <div class="mt-3 w-100 p-3 rounded-3" style="background: #f8fafc; border: 1px solid #edf2f7;">
+                    <small class="text-muted fw-bold d-block mb-1">WELCOME BACK</small>
+                    <h6 id="sidebarSellerName" class="fw-bold text-main mb-0 text-truncate">Loading...</h6>
+                </div>
+            </div>
+            <div class="sidebar-menu">
+                <a href="#" class="nav-item-link active" onclick="app.switchTab('dashboard', this)"><i class="fas fa-grid-2"></i> Dashboard</a>
+                <a href="#" class="nav-item-link" onclick="app.switchTab('open_orders', this)">
+                    <i class="fas fa-bolt text-warning"></i> Open Orders 
+                    <span class="badge bg-danger rounded-pill ms-auto" id="openOrdersBadge" style="display:none;">0</span>
+                </a>
+                <a href="#" class="nav-item-link" onclick="app.switchTab('orders', this)">
+                    <i class="fas fa-box-open"></i> My Orders 
+                    <span class="badge bg-primary rounded-pill ms-auto" id="newOrdersBadge" style="display:none;">0</span>
+                </a>
+                <a href="#" class="nav-item-link" onclick="app.switchTab('products', this)"><i class="fas fa-tags"></i> Inventory</a>
+                <a href="#" class="nav-item-link" onclick="app.switchTab('wallet', this)"><i class="fas fa-wallet"></i> Payments</a>
+                <a href="#" class="nav-item-link" onclick="app.switchTab('network', this)"><i class="fas fa-users"></i> Connect Network</a>
+                <a href="#" class="nav-item-link" onclick="app.switchTab('profile', this)"><i class="fas fa-user-shield"></i> Profile & KYC</a>
+                <div style="margin-top: 40px;"></div>
+                <a href="#" class="nav-item-link text-danger mt-auto" onclick="app.logout()"><i class="fas fa-sign-out-alt"></i> Secure Logout</a>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Mobile Header -->
+            <div class="mobile-header">
+                <img src="https://i.ibb.co/RG5zH3DH/Picsart-26-08-26-00-20-49-360.webp" alt="AJonny Shop" style="height: 40px; object-fit: contain;">
+                <button class="btn text-main fs-4 p-0 border-0 bg-transparent" onclick="app.toggleSidebar()"><i class="fas fa-bars-staggered"></i></button>
+            </div>
+
+            <!-- TAB 1: DASHBOARD -->
+            <div id="tab_dashboard" class="seller-tab">
+                <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-3">
+                    <div>
+                        <h3 class="fw-bold text-main mb-1">Business Overview</h3>
+                        <p class="text-muted mb-0">Track your performance and sales metrics.</p>
+                    </div>
+                    <div class="bg-white px-3 py-2 rounded-pill shadow-sm border border-light fw-bold text-main" style="font-size: 14px;">
+                        <i class="fas fa-calendar-day text-primary me-2"></i> <span id="currentDateDisplay">Today</span>
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-xl-3 col-md-6">
+                        <div class="stat-card">
+                            <div class="stat-icon stat-blue"><i class="fas fa-wallet"></i></div>
+                            <div><p class="text-muted mb-1 small fw-bold">NET SALES</p><h3 class="mb-0 fw-bold text-main" id="statRevenue">₹0</h3></div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6">
+                        <div class="stat-card">
+                            <div class="stat-icon stat-green"><i class="fas fa-box-check"></i></div>
+                            <div><p class="text-muted mb-1 small fw-bold">COMPLETED ORDERS</p><h3 class="mb-0 fw-bold text-main" id="statOrders">0</h3></div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6">
+                        <div class="stat-card">
+                            <div class="stat-icon stat-orange"><i class="fas fa-clock-rotate-left"></i></div>
+                            <div><p class="text-muted mb-1 small fw-bold">PENDING FULFILLMENT</p><h3 class="mb-0 fw-bold text-main" id="statPending">0</h3></div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6">
+                        <div class="stat-card">
+                            <div class="stat-icon stat-pink"><i class="fas fa-cube"></i></div>
+                            <div><p class="text-muted mb-1 small fw-bold">ACTIVE INVENTORY</p><h3 class="mb-0 fw-bold text-main" id="statProducts">0</h3></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3D Interactive Chart Card -->
+                <div class="tilt-wrapper">
+                    <div class="premium-card card-3d" id="analytics3DCard">
+                        <div class="card-3d-inner">
+                            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+                                <div>
+                                    <h5 class="fw-bold mb-1 text-main"><i class="fas fa-chart-line text-primary me-2"></i> Revenue Analytics 3D</h5>
+                                    <p class="text-muted small mb-0">Daily earning trends for the last 7 days</p>
+                                </div>
+                                <div class="bg-light px-3 py-2 rounded-3 text-muted fw-bold small border"><i class="fas fa-chart-bar me-2"></i> 7 Days Trend</div>
+                            </div>
+                            
+                            <div class="d-flex gap-5 mb-4 p-4 rounded-4" style="background: #f8fafc; border: 1px solid #edf2f7;">
+                                <div>
+                                    <small class="text-muted fw-bold d-block mb-1">7 DAYS EARNINGS</small>
+                                    <h2 class="fw-bold text-primary mb-0" id="chartTotalRevenue">₹0</h2>
+                                </div>
+                                <div class="border-start ps-5">
+                                    <small class="text-muted fw-bold d-block mb-1">TOTAL DELIVERIES</small>
+                                    <h2 class="fw-bold text-success mb-0" id="chartTotalOrders">0</h2>
+                                </div>
+                            </div>
+
+                            <div class="chart-container-3d" style="height: 350px; position: relative; width: 100%;">
+                                <canvas id="salesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 1.5: OPEN ORDERS -->
+            <div id="tab_open_orders" class="seller-tab" style="display: none;">
+                <!-- ... Open orders layout remains identical ... -->
+                <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-3">
+                    <div>
+                        <h3 class="fw-bold text-main mb-1">Open Order Pool <span class="badge bg-danger ms-2 rounded-pill fs-6 animation-pulse">Live</span></h3>
+                        <p class="text-muted mb-0">Accept unassigned orders quickly. First come, first serve!</p>
+                    </div>
+                    <button class="btn btn-light border fw-bold text-main px-4 py-2" onclick="app.renderOpenOrders()"><i class="fas fa-sync-alt me-2 text-primary"></i> Refresh</button>
+                </div>
+                <div id="openOrdersList" class="row g-4"></div>
+            </div>
+
+            <!-- TAB 2: INVENTORY -->
+            <div id="tab_products" class="seller-tab" style="display: none;">
+                <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-3">
+                    <div>
+                        <h3 class="fw-bold text-main mb-1">Inventory Management</h3>
+                        <p class="text-muted mb-0">Add, edit or disable your products.</p>
+                    </div>
+                    <div class="d-flex gap-3 align-items-center">
+                        <select class="form-control-custom py-2 px-4 pe-5" id="inventoryCategoryFilter" onchange="app.filterInventory()" style="width: auto;">
+                            <option value="All">All Categories</option>
+                            <!-- Dynamic Categories Populated Here -->
+                        </select>
+                        <button class="btn-premium px-4" data-bs-toggle="modal" data-bs-target="#productModal" onclick="app.resetProductForm()">
+                            <i class="fas fa-plus me-2"></i> Add Product
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="premium-card p-0 overflow-hidden">
+                    <div class="table-responsive">
+                        <table class="table-custom text-start w-100 m-0">
+                            <thead style="background: #f8fafc;">
+                                <tr>
+                                    <th class="pt-3 pb-3">Product Info</th>
+                                    <th class="pt-3 pb-3">Category</th>
+                                    <th class="pt-3 pb-3">Price & Disc.</th>
+                                    <th class="pt-3 pb-3">Stock Qty</th>
+                                    <th class="pt-3 pb-3">Status</th>
+                                    <th class="text-end pt-3 pb-3 pe-4">Manage</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productsTable">
+                                <tr><td colspan="6" class="text-center py-5 text-muted">Loading your products...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: MY ORDERS -->
+            <div id="tab_orders" class="seller-tab" style="display: none;">
+                <h3 class="fw-bold text-main mb-4">My Accepted Orders</h3>
+                
+                <div class="bg-white p-2 rounded-pill shadow-sm d-inline-flex mb-4 border">
+                    <button class="btn btn-sm px-4 py-2 rounded-pill fw-bold order-filter-btn active" data-filter="Active" onclick="app.filterOrders('Active', this)">Active Orders</button>
+                    <button class="btn btn-sm px-4 py-2 rounded-pill fw-bold text-muted order-filter-btn" data-filter="Completed" onclick="app.filterOrders('Completed', this)">Completed</button>
+                    <button class="btn btn-sm px-4 py-2 rounded-pill fw-bold text-muted order-filter-btn" data-filter="Cancelled" onclick="app.filterOrders('Cancelled', this)">Cancelled</button>
+                </div>
+
+                <div id="ordersList" class="row g-4"></div>
+            </div>
+
+            <!-- TAB 4: WALLET -->
+            <div id="tab_wallet" class="seller-tab" style="display: none;">
+                <!-- ... Wallet layout remains identical ... -->
+                <h3 class="fw-bold text-main mb-4">Payments & Settlements</h3>
+                <div class="row g-4 mb-5">
+                    <div class="col-xl-5">
+                        <div class="wallet-card h-100 d-flex flex-column justify-content-center text-center">
+                            <p class="mb-2 text-white-50 fw-bold letter-spacing-1">AVAILABLE TO WITHDRAW</p>
+                            <h1 class="fw-bolder mb-4" id="walletBalance" style="font-size: 3.5rem;">₹0</h1>
+                            <button class="btn bg-white text-primary rounded-pill fw-bold w-75 mx-auto py-3 shadow" onclick="app.requestWithdrawal()">Transfer to Bank</button>
+                        </div>
+                    </div>
+                    <div class="col-xl-7">
+                        <div class="premium-card h-100 m-0 d-flex flex-column justify-content-center">
+                            <h5 class="fw-bold text-main mb-4"><i class="fas fa-shield-check text-success me-2"></i> Settlement Policies</h5>
+                            <div class="d-flex align-items-start mb-3 pb-3 border-bottom">
+                                <div class="bg-primary-light text-primary rounded-circle p-2 me-3"><i class="fas fa-percentage"></i></div>
+                                <div><h6 class="fw-bold mb-1">Platform Commission</h6><p class="text-muted small mb-0">A flat 7% fee is deducted only on successfully delivered orders.</p></div>
+                            </div>
+                            <div class="d-flex align-items-start">
+                                <div class="bg-success-light text-success rounded-circle p-2 me-3"><i class="fas fa-bolt"></i></div>
+                                <div><h6 class="fw-bold mb-1">Instant Settlement</h6><p class="text-muted small mb-0">Funds are available in your wallet immediately after delivery.</p></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <h4 class="fw-bold text-main mb-3">Transaction History</h4>
+                <div class="premium-card p-0 overflow-hidden">
+                    <div class="list-group list-group-flush" id="transactionsList"></div>
+                </div>
+            </div>
+
+            <!-- TAB 5: SELLER NETWORK -->
+            <div id="tab_network" class="seller-tab" style="display: none;">
+                <h3 class="fw-bold text-main mb-2">Seller Connect Network</h3>
+                <p class="text-muted mb-4">Collaborate and communicate with other verified partners.</p>
+                <div class="row g-4" id="sellerNetworkGrid"></div>
+            </div>
+
+            <!-- TAB 6: PROFILE & KYC -->
+            <div id="tab_profile" class="seller-tab" style="display: none;">
+                <!-- Profile content unchanged -->
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                    <h3 class="fw-bold text-main mb-0">Profile & KYC Validation</h3>
+                    <button class="btn-premium px-5" onclick="app.saveProfile()"><i class="fas fa-save me-2"></i> Save Changes</button>
+                </div>
+                <!-- Tabs Structure Remains Same -->
+                <div class="premium-card p-0">
+                    <ul class="nav nav-tabs kyc-tabs d-flex flex-nowrap overflow-auto px-4 pt-4 border-0" id="kycTabs" role="tablist">
+                        <li class="nav-item me-2" role="presentation"><button class="nav-link active rounded-3 px-4 py-3" data-bs-toggle="tab" data-bs-target="#kyc-biz" style="background: #f8fafc; border: 1px solid #edf2f7;"><i class="fas fa-building text-primary me-2"></i> Business Details</button></li>
+                        <li class="nav-item me-2" role="presentation"><button class="nav-link rounded-3 px-4 py-3" data-bs-toggle="tab" data-bs-target="#kyc-pickup" style="background: #f8fafc; border: 1px solid #edf2f7;"><i class="fas fa-map-location-dot text-danger me-2"></i> Pickup Address</button></li>
+                        <li class="nav-item me-2" role="presentation"><button class="nav-link rounded-3 px-4 py-3" data-bs-toggle="tab" data-bs-target="#kyc-bank" style="background: #f8fafc; border: 1px solid #edf2f7;"><i class="fas fa-university text-success me-2"></i> Bank Details</button></li>
+                    </ul>
+                    <div class="tab-content p-5">
+                        <!-- Business -->
+                        <div class="tab-pane fade show active" id="kyc-biz">
+                            <div class="row g-4">
+                                <div class="col-md-6"><label class="form-label fw-bold small text-muted">Shop / Business Name</label><input type="text" class="form-control-custom w-100" id="profBizName"></div>
+                                <div class="col-md-6"><label class="form-label fw-bold small text-muted">Owner Full Name</label><input type="text" class="form-control-custom w-100" id="profOwnerName"></div>
+                                <div class="col-md-6"><label class="form-label fw-bold small text-muted">Registered Email</label><input type="email" class="form-control-custom w-100 bg-light" id="profEmail" readonly></div>
+                                <div class="col-md-6"><label class="form-label fw-bold small text-muted">Mobile Number</label><input type="tel" class="form-control-custom w-100" id="profMobile"></div>
+                                <div class="col-12 mt-4 pt-3 border-top">
+                                    <h6 class="fw-bold text-main mb-3">GST Info</h6>
+                                    <div class="form-check form-switch fs-5 mb-3"><input class="form-check-input" type="checkbox" id="gstToggle" onchange="app.toggleGst(this.checked)"><label class="form-check-label fw-bold text-main ms-2" for="gstToggle" style="font-size:16px;">I have a GSTIN Number</label></div>
+                                    <div class="row g-4">
+                                        <div class="col-md-6" id="gstInputContainer" style="display: none;"><label class="form-label fw-bold small text-muted">GSTIN</label><input type="text" class="form-control-custom w-100 text-uppercase" id="profGst"></div>
+                                        <div class="col-md-6"><label class="form-label fw-bold small text-muted">PAN</label><input type="text" class="form-control-custom w-100 text-uppercase" id="profPan"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Pickup -->
+                        <div class="tab-pane fade" id="kyc-pickup">
+                            <div class="row g-4">
+                                <div class="col-md-8"><label class="form-label fw-bold small text-muted">Street / Building</label><input type="text" class="form-control-custom w-100" id="profAddress"></div>
+                                <div class="col-md-4"><label class="form-label fw-bold small text-muted">Road</label><input type="text" class="form-control-custom w-100" id="profRoad"></div>
+                                <div class="col-md-4"><label class="form-label fw-bold small text-muted">City</label><input type="text" class="form-control-custom w-100" id="profCity"></div>
+                                <div class="col-md-4"><label class="form-label fw-bold small text-muted">State</label><input type="text" class="form-control-custom w-100" id="profState"></div>
+                                <div class="col-md-4"><label class="form-label fw-bold small text-muted">Pincode</label><input type="text" class="form-control-custom w-100" id="profPin"></div>
+                            </div>
+                        </div>
+                        <!-- Bank -->
+                        <div class="tab-pane fade" id="kyc-bank">
+                            <div class="row g-4">
+                                <div class="col-md-6"><label class="form-label fw-bold small text-muted">Account Holder Name</label><input type="text" class="form-control-custom w-100" id="profBankName"></div>
+                                <div class="col-md-6"><label class="form-label fw-bold small text-muted">Bank Name</label><input type="text" class="form-control-custom w-100" id="profBankOrg"></div>
+                                <div class="col-md-6"><label class="form-label fw-bold small text-muted">Account Number</label><input type="password" class="form-control-custom w-100" id="profBankAcc"></div>
+                                <div class="col-md-6"><label class="form-label fw-bold small text-muted">IFSC Code</label><input type="text" class="form-control-custom w-100 text-uppercase" id="profBankIfsc"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Add/Edit Product Modal -->
+    <div class="modal fade" id="productModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content border-0" style="border-radius: var(--radius-lg); overflow: hidden;">
+                <div class="modal-header border-0 bg-light p-4">
+                    <h4 class="modal-title fw-bold text-main" id="productModalTitle">Add New Product</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4" style="max-height: 75vh; overflow-y: auto;">
+                    <form id="productForm">
+                        <input type="hidden" id="p_id">
+                        
+                        <div class="row g-4">
+                            <!-- Basic Info -->
+                            <div class="col-md-8">
+                                <label class="form-label fw-bold small text-muted">Product Name *</label>
+                                <input type="text" class="form-control-custom w-100" id="p_name" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-muted">Category *</label>
+                                <select class="form-control-custom w-100" id="p_category" required>
+                                    <!-- Dynamic Categories Setup via Firebase Admin -->
+                                </select>
+                            </div>
+
+                            <!-- Pricing & Inventory -->
+                            <div class="col-12"><h6 class="fw-bold text-main mb-0 mt-2 border-bottom pb-2">Pricing & Inventory</h6></div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-muted">Original MRP (₹) *</label>
+                                <input type="number" class="form-control-custom w-100 text-muted text-decoration-line-through" id="p_mrp" required min="1" onkeyup="app.calcDiscount()">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-muted">Selling Price (₹) *</label>
+                                <input type="number" class="form-control-custom w-100 fw-bold text-success" id="p_price" required min="1" onkeyup="app.calcDiscount()">
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <div class="w-100 p-2 rounded-3 bg-light text-muted fw-bold text-center border" id="discountBadge" style="height: 52px; display: flex; align-items: center; justify-content: center; font-size:18px;">
+                                    0% OFF
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-muted">Unit / Net Qty (e.g., 1 Pcs)</label>
+                                <input type="text" class="form-control-custom w-100" id="p_unit" placeholder="E.g., Pack of 2">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-muted">Available Stock Qty *</label>
+                                <input type="number" class="form-control-custom w-100" id="p_stock" required min="0" placeholder="Total Items in Stock">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-muted">Visibility Status</label>
+                                <select class="form-control-custom w-100" id="p_status">
+                                    <option value="Active">Active (Live)</option>
+                                    <option value="Inactive">Inactive (Hidden)</option>
+                                    <option value="Out of Stock">Out of Stock</option>
+                                </select>
+                            </div>
+
+                            <!-- IMGBB PRO SECTION INTEGRATION -->
+                            <div class="col-12">
+                                <h6 class="fw-bold text-main mb-0 mt-2 border-bottom pb-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                    <span>Product Images (Up to 8 Links)</span>
+                                    <span class="badge bg-primary-light text-primary border border-primary border-opacity-25 rounded-pill px-3 py-1"><i class="fas fa-crown text-warning me-1"></i> ImgBB Pro Integration</span>
+                                </h6>
+                                
+                                <div class="upload-area mt-3" id="imgbbDropZone">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <p class="mb-1 fw-bold text-main">Drag & Drop images here or click to browse</p>
+                                    <small class="text-muted d-block mb-2">Instantly uploads and fills the URL fields below! (Max 32MB per file)</small>
+                                    <input type="file" id="imgbbFileInput" multiple accept="image/*" style="display:none;">
+                                </div>
+
+                                <!-- ImgBB Progress Bar -->
+                                <div id="imgbbProgressWrapper" style="display:none;" class="mt-3 bg-light p-3 rounded-4 border">
+                                    <p class="small fw-bold text-main mb-2"><i class="fas fa-spinner fa-spin text-primary me-2"></i> Uploading to ImgBB Server...</p>
+                                    <div class="progress" style="height: 10px; border-radius: 10px;">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" id="imgbbProgressBar" style="width: 0%"></div>
+                                    </div>
+                                    <div class="d-flex justify-content-between small fw-bold text-muted mt-2">
+                                        <span id="imgbbProgressText">0%</span>
+                                        <span id="imgbbFileText">0/0 files processed</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Hidden / Populated URL Fields -->
+                            <div class="col-md-3"><input type="url" class="form-control-custom w-100" id="p_img_1" placeholder="1. Main Image URL *" required></div>
+                            <div class="col-md-3"><input type="url" class="form-control-custom w-100" id="p_img_2" placeholder="2. Image URL"></div>
+                            <div class="col-md-3"><input type="url" class="form-control-custom w-100" id="p_img_3" placeholder="3. Image URL"></div>
+                            <div class="col-md-3"><input type="url" class="form-control-custom w-100" id="p_img_4" placeholder="4. Image URL"></div>
+                            <div class="col-md-3"><input type="url" class="form-control-custom w-100" id="p_img_5" placeholder="5. Image URL"></div>
+                            <div class="col-md-3"><input type="url" class="form-control-custom w-100" id="p_img_6" placeholder="6. Image URL"></div>
+                            <div class="col-md-3"><input type="url" class="form-control-custom w-100" id="p_img_7" placeholder="7. Image URL"></div>
+                            <div class="col-md-3"><input type="url" class="form-control-custom w-100" id="p_img_8" placeholder="8. Image URL"></div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-bold small text-muted mt-2">Description *</label>
+                                <textarea class="form-control-custom w-100" id="p_desc" rows="4" required placeholder="Detailed description..."></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-0 bg-light p-4">
+                    <button type="button" class="btn btn-light fw-bold px-4 py-2 text-muted" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn-premium px-5" onclick="app.saveProduct()">Save Product Details</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Withdrawal Modal -->
+    <div class="modal fade" id="withdrawalModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0" style="border-radius: var(--radius-lg); overflow: hidden;">
+                <div class="modal-body text-center p-5">
+                    <div class="d-inline-flex p-3 rounded-circle bg-success-light text-success mb-3"><i class="fas fa-university fa-2x"></i></div>
+                    <h4 class="fw-bold text-main">Transfer to Bank</h4>
+                    <p class="text-muted mb-1 mt-3">Available Balance</p>
+                    <h1 class="fw-bolder text-success mb-4" id="withdrawalModalAmount">₹0</h1>
+                    
+                    <div class="text-start mb-3">
+                        <label class="form-label fw-bold small text-muted">Confirm Account Number</label>
+                        <input type="text" class="form-control-custom w-100 py-3" id="withdrawAccountNo" required>
+                    </div>
+                    <div class="text-start mb-4">
+                        <label class="form-label fw-bold small text-muted">Confirm IFSC Code</label>
+                        <input type="text" class="form-control-custom w-100 py-3 text-uppercase" id="withdrawIfsc" required>
+                    </div>
+                    
+                    <button class="btn-premium w-100 py-3 rounded-pill" onclick="app.submitWithdrawal()">Process Request</button>
+                    <button class="btn btn-link text-muted mt-3 text-decoration-none fw-bold" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed top-0 end-0 p-4" style="z-index: 10500;"></div>
+
+    <!-- Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCnT0KgHBq8HnVb4QgETVhfo6oFo2WnMu0",
+            authDomain: "ajonny-shop-store.firebaseapp.com",
+            databaseURL: "https://ajonny-shop-store-default-rtdb.firebaseio.com",
+            projectId: "ajonny-shop-store",
+            storageBucket: "ajonny-shop-store.firebasestorage.app",
+            messagingSenderId: "536237083535",
+            appId: "1:536237083535:web:e4451dc73fbd31a70859fa"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        document.getElementById('currentDateDisplay').innerText = new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+        const app = {
+            user: null, profile: null, myProducts: [], myOrders: [], openOrders: [], withdrawals: [], otherSellers: [], 
+            salesChartInstance: null, currentOrderFilter: 'Active', platformCommissionRate: 0.07, isDashboardInitialized: false,
+            isRegistering: false, inventoryFilter: 'All', selectedAddressType: 'Work', ImgbbApiKey: '2a9849e065d900ba03412da3c6f1aa8d',
+
+            init() {
+                auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(() => {
+                    auth.onAuthStateChanged((user) => {
+                        if (user) {
+                            this.user = user;
+                            if (!this.isRegistering) {
+                                document.getElementById('loader').style.display = 'flex';
+                                this.verifySellerAccount();
+                            }
+                        } else {
+                            this.user = null; this.profile = null; this.isDashboardInitialized = false;
+                            this.showView('authView'); document.getElementById('loader').style.display = 'none';
+                        }
+                    });
+                });
+                document.getElementById('loginForm').addEventListener('submit', (e) => { e.preventDefault(); this.login(); });
+                document.getElementById('sellerApplyForm').addEventListener('submit', (e) => { e.preventDefault(); this.register(); });
+            },
+
+            showView(viewId) { document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active')); document.getElementById(viewId).classList.add('active'); },
+            toggleSidebar() { document.getElementById('sidebar').classList.toggle('show'); document.getElementById('sidebarOverlay').classList.toggle('show'); },
+
+            verifySellerAccount() {
+                const sellerRef = db.ref('sellers/' + this.user.uid); sellerRef.off(); 
+                sellerRef.on('value', snap => {
+                    document.getElementById('loader').style.display = 'none';
+                    if (snap.exists()) {
+                        this.profile = snap.val();
+                        if (this.profile.status === 'verified') { this.showView('sellerView'); this.initDashboard(); } 
+                        else {
+                            const activeTab = document.querySelector('.seller-tab[style="display: block;"]');
+                            if (activeTab && activeTab.id === 'tab_profile' && document.getElementById('sellerView').classList.contains('active')) { this.initDashboard(true); } 
+                            else {
+                                this.showView('pendingView');
+                                if (this.profile.status === 'rejected') {
+                                    document.getElementById('rejectionAlert').style.display = 'block';
+                                    document.getElementById('rejectionText').innerText = "Issue: " + (this.profile.rejectionReason || 'Contact Support to resolve.');
+                                }
+                            }
+                        }
+                    } else { if (!this.isRegistering) { this.showToast('Account not found.', 'danger'); auth.signOut(); } }
+                }, () => { this.showToast('Network error.', 'warning'); document.getElementById('loader').style.display = 'none'; });
+            },
+
+            async login() {
+                const e = document.getElementById('loginEmail').value, p = document.getElementById('loginPassword').value; document.getElementById('loader').style.display = 'flex';
+                try { await auth.signInWithEmailAndPassword(e, p); } catch(err) { document.getElementById('loader').style.display = 'none'; this.showToast(err.message, 'danger'); }
+            },
+
+            async register() {
+                const email = document.getElementById('s_email').value, pass = document.getElementById('s_password').value;
+                document.getElementById('loader').style.display = 'flex'; this.isRegistering = true; 
+                try {
+                    const cred = await auth.createUserWithEmailAndPassword(email, pass);
+                    await db.ref('sellers/' + cred.user.uid).set({ businessName: document.getElementById('s_bizName').value, ownerName: document.getElementById('s_ownerName').value, email: email, mobile: document.getElementById('s_mobile').value, status: 'pending', submittedAt: new Date().toISOString() });
+                    this.showToast('Welcome! Complete KYC to get verified.', 'success'); this.user = cred.user; this.isRegistering = false; this.verifySellerAccount();
+                } catch(err) { this.showToast(err.message, 'danger'); document.getElementById('loader').style.display = 'none'; this.isRegistering = false; }
+            },
+
+            logout() { auth.signOut(); },
+
+            accessProfileWhilePending() {
+                this.showView('sellerView'); this.initDashboard(true);
+                document.querySelectorAll('.sidebar-menu a').forEach(link => { if(!link.innerHTML.includes('Profile') && !link.innerHTML.includes('Logout')) link.style.display = 'none'; });
+                this.switchTab('profile');
+            },
+
+            initDashboard(isPending = false) {
+                if (this.isDashboardInitialized && !isPending) return;
+                
+                document.getElementById('sidebarSellerName').innerText = this.profile.businessName; document.getElementById('profBizName').value = this.profile.businessName || ''; document.getElementById('profOwnerName').value = this.profile.ownerName || ''; document.getElementById('profEmail').value = this.profile.email || ''; document.getElementById('profMobile').value = this.profile.mobile || '';
+                if (this.profile.hasGst) { document.getElementById('gstToggle').checked = true; this.toggleGst(true); document.getElementById('profGst').value = this.profile.gstNumber || ''; } else { document.getElementById('gstToggle').checked = false; this.toggleGst(false); }
+                document.getElementById('profPan').value = this.profile.panNumber || '';
+                if (this.profile.pickupAddress) { document.getElementById('profAddress').value = this.profile.pickupAddress.address || ''; document.getElementById('profRoad').value = this.profile.pickupAddress.road || ''; document.getElementById('profCity').value = this.profile.pickupAddress.city || ''; document.getElementById('profState').value = this.profile.pickupAddress.state || ''; document.getElementById('profPin').value = this.profile.pickupAddress.pincode || ''; }
+                if (this.profile.bankDetails) { document.getElementById('profBankName').value = this.profile.bankDetails.accountName || ''; document.getElementById('profBankAcc').value = this.profile.bankDetails.accountNo || ''; document.getElementById('profBankIfsc').value = this.profile.bankDetails.ifsc || ''; document.getElementById('profBankOrg').value = this.profile.bankDetails.bankName || ''; }
+
+                if (!isPending) { 
+                    this.isDashboardInitialized = true; 
+                    document.querySelectorAll('.sidebar-menu a').forEach(link => link.style.display = 'flex'); 
+                    
+                    // Initialization Triggers
+                    this.listenToCategories(); 
+                    this.listenToInventory(); 
+                    this.listenToWithdrawals(); 
+                    this.listenToSellers(); 
+                    this.init3DCard(); 
+                    this.initImgBBUploader(); 
+                }
+            },
+
+            // CATEGORY LISTENER DYNAMIC FIX
+            listenToCategories() {
+                db.ref('categories').on('value', snap => {
+                    // Fallback Defaults if empty
+                    let categoryList = ["Kurti, Saree & Lehenga", "Women Western", "Men", "Electronics", "Beauty & Health", "Home & Kitchen"];
+                    
+                    if(snap.exists()) {
+                        const data = snap.val();
+                        // Handle object or array formats seamlessly
+                        categoryList = Object.values(data).map(c => typeof c === 'object' ? (c.name || c.title) : c);
+                    }
+
+                    // Populate Dropdowns
+                    const optionsHtml = categoryList.map(c => `<option value="${c}">${c}</option>`).join('');
+                    const filterHtml = '<option value="All">All Categories</option>' + optionsHtml;
+
+                    document.getElementById('p_category').innerHTML = optionsHtml;
+                    document.getElementById('inventoryCategoryFilter').innerHTML = filterHtml;
+                });
+            },
+
+            // IMGBB UPLOADER INTEGRATION
+            initImgBBUploader() {
+                const dropZone = document.getElementById('imgbbDropZone');
+                const fileInput = document.getElementById('imgbbFileInput');
+
+                if(!dropZone || !fileInput) return;
+
+                dropZone.addEventListener('click', () => fileInput.click());
+                dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+                dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+                
+                dropZone.addEventListener('drop', (e) => {
+                    e.preventDefault(); dropZone.classList.remove('dragover');
+                    if(e.dataTransfer.files.length) this.uploadToImgBB(e.dataTransfer.files);
+                });
+                
+                fileInput.addEventListener('change', (e) => {
+                    if(e.target.files.length) this.uploadToImgBB(e.target.files);
+                    fileInput.value = '';
+                });
+            },
+
+            async uploadToImgBB(files) {
+                // Find empty slots
+                let emptyCount = 0;
+                for(let j=1; j<=8; j++) { if(!document.getElementById('p_img_'+j).value) emptyCount++; }
+                
+                const totalToUpload = Math.min(files.length, emptyCount);
+                if(totalToUpload === 0) {
+                    this.showToast('All 8 image URL slots are already full!', 'warning'); return;
+                }
+
+                const wrapper = document.getElementById('imgbbProgressWrapper');
+                const bar = document.getElementById('imgbbProgressBar');
+                const pText = document.getElementById('imgbbProgressText');
+                const fText = document.getElementById('imgbbFileText');
+                
+                wrapper.style.display = 'block';
+                let completed = 0;
+                
+                for(let i=0; i<totalToUpload; i++) {
+                    const file = files[i];
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    
+                    try {
+                        const res = await fetch(`https://api.imgbb.com/1/upload?key=${this.ImgbbApiKey}`, { method: 'POST', body: formData });
+                        const json = await res.json();
+                        if(json.success) {
+                            const url = json.data.url;
+                            // Fill Next Available
+                            for(let j=1; j<=8; j++) {
+                                const inp = document.getElementById('p_img_'+j);
+                                if(!inp.value) { inp.value = url; break; }
+                            }
+                        }
+                    } catch(e) { console.error('Upload Error', e); }
+                    
+                    completed++;
+                    const pct = Math.round((completed/totalToUpload)*100);
+                    bar.style.width = pct + '%';
+                    pText.innerText = pct + '%';
+                    fText.innerText = `${completed}/${totalToUpload} files processed`;
+                }
+                
+                setTimeout(() => { wrapper.style.display = 'none'; bar.style.width = '0%'; }, 2500);
+                this.showToast('Images successfully hosted & linked!', 'success');
+            },
+
+            // 3D CARD INTERACTION
+            init3DCard() {
+                const card = document.getElementById('analytics3DCard');
+                if(!card) return;
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    // Max rotation of 8 degrees
+                    const rotateX = ((y - centerY) / centerY) * -8;
+                    const rotateY = ((x - centerX) / centerX) * 8;
+                    card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+                });
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = `rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+                });
+            },
+
+            toggleGst(hasGst) { document.getElementById('gstInputContainer').style.display = hasGst ? 'block' : 'none'; if(!hasGst) document.getElementById('profGst').value = ''; },
+            
+            async saveProfile() {
+                const updatedData = { businessName: document.getElementById('profBizName').value, ownerName: document.getElementById('profOwnerName').value, mobile: document.getElementById('profMobile').value, hasGst: document.getElementById('gstToggle').checked, gstNumber: document.getElementById('profGst').value, panNumber: document.getElementById('profPan').value, pickupAddress: { address: document.getElementById('profAddress').value, road: document.getElementById('profRoad').value, city: document.getElementById('profCity').value, state: document.getElementById('profState').value, pincode: document.getElementById('profPin').value }, bankDetails: { accountName: document.getElementById('profBankName').value, accountNo: document.getElementById('profBankAcc').value, ifsc: document.getElementById('profBankIfsc').value, bankName: document.getElementById('profBankOrg').value } };
+                if (this.profile.status === 'pending' || this.profile.status === 'rejected') { updatedData.status = 'pending'; updatedData.submittedAt = new Date().toISOString(); }
+                document.getElementById('loader').style.display = 'flex';
+                try { await db.ref('sellers/' + this.user.uid).update(updatedData); this.showToast('Profile saved successfully.', 'success'); } catch(e) { this.showToast('Error saving details', 'danger'); }
+                document.getElementById('loader').style.display = 'none';
+            },
+
+            switchTab(tabId, el) { document.querySelectorAll('.seller-tab').forEach(t => t.style.display = 'none'); document.getElementById('tab_' + tabId).style.display = 'block'; document.querySelectorAll('.sidebar-menu a').forEach(a => a.classList.remove('active')); if(el) el.classList.add('active'); document.getElementById('sidebar').classList.remove('show'); document.getElementById('sidebarOverlay').classList.remove('show'); },
+
+            listenToInventory() { db.ref('products').orderByChild('sellerId').equalTo(this.user.uid).on('value', snap => { const data = snap.val(); this.myProducts = data ? Object.values(data) : []; this.filterInventory(); document.getElementById('statProducts').innerText = this.myProducts.length; this.listenToOrders(); }); },
+            filterInventory() { this.inventoryFilter = document.getElementById('inventoryCategoryFilter').value; this.renderProducts(); },
+
+            renderProducts() {
+                const tbody = document.getElementById('productsTable');
+                let filtered = this.inventoryFilter !== 'All' ? this.myProducts.filter(p => p.category === this.inventoryFilter) : this.myProducts;
+                
+                if(!filtered.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted"><i class="fas fa-box-open fa-2x mb-3 text-light-gray"></i><br>No products found.</td></tr>'; return; }
+                
+                tbody.innerHTML = filtered.map(p => {
+                    const statClass = p.status === 'Active' ? 'success' : (p.status === 'Inactive' ? 'secondary' : 'danger');
+                    const mainImage = (p.images && p.images.length > 0) ? p.images[0] : p.image;
+                    
+                    return `
+                    <tr>
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center">
+                                <img src="${mainImage}" class="product-thumb me-3">
+                                <div><strong class="d-block text-main">${p.name}</strong><small class="text-muted">Unit: ${p.unit || 'N/A'}</small></div>
+                            </div>
+                        </td>
+                        <td><span class="bg-light px-3 py-1 rounded-pill text-muted small fw-bold border">${p.category}</span></td>
+                        <td class="fw-bold text-main">₹${p.price.toLocaleString()} ${(p.discount && p.discount > 0) ? `<br><small class="text-muted text-decoration-line-through">₹${(p.originalPrice || 0).toLocaleString()}</small> <span class="text-success small fw-bold">(${p.discount}% OFF)</span>` : ''}</td>
+                        <td><span class="badge ${p.stockQuantity > 5 ? 'bg-primary-light text-primary' : 'bg-danger-light text-danger'} rounded-pill px-3 py-2 border"><i class="fas fa-cubes me-1"></i> ${p.stockQuantity || 0}</span></td>
+                        <td><span class="badge bg-${statClass}-light text-${statClass} border border-${statClass} border-opacity-25 px-2 py-1">${p.status || 'Active'}</span></td>
+                        <td class="text-end pe-4">
+                            <button class="btn btn-sm btn-light text-primary me-2 shadow-sm" onclick="app.editProduct(${p.id})"><i class="fas fa-pen"></i></button>
+                            <button class="btn btn-sm btn-light text-danger shadow-sm" onclick="app.deleteProduct(${p.id})"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+                }).join('');
+            },
+
+            calcDiscount() {
+                const mrp = parseFloat(document.getElementById('p_mrp').value) || 0;
+                const price = parseFloat(document.getElementById('p_price').value) || 0;
+                const badge = document.getElementById('discountBadge');
+
+                if (mrp > 0 && price > 0 && mrp > price) {
+                    const disc = Math.round(((mrp - price) / mrp) * 100);
+                    badge.innerText = `${disc}% OFF`;
+                    badge.className = 'w-100 p-2 rounded-3 bg-success-light text-success fw-bold text-center border border-success border-opacity-25';
+                } else if (price > mrp && mrp > 0) {
+                    badge.innerText = `ERROR`;
+                    badge.className = 'w-100 p-2 rounded-3 bg-danger-light text-danger fw-bold text-center border border-danger border-opacity-25';
+                } else {
+                    badge.innerText = `0% OFF`;
+                    badge.className = 'w-100 p-2 rounded-3 bg-light text-muted fw-bold text-center border';
+                }
+            },
+
+            resetProductForm() { 
+                document.getElementById('productForm').reset(); document.getElementById('p_id').value = ''; 
+                document.getElementById('productModalTitle').innerText = 'Add New Product';
+                this.calcDiscount();
+            },
+
+            editProduct(id) {
+                const p = this.myProducts.find(x => x.id === id); if(!p) return;
+                document.getElementById('productModalTitle').innerText = 'Edit Product'; 
+                document.getElementById('p_id').value = p.id;
+                document.getElementById('p_name').value = p.name; 
+                document.getElementById('p_category').value = p.category;
+                document.getElementById('p_mrp').value = p.originalPrice || p.price;
+                document.getElementById('p_price').value = p.price;
+                this.calcDiscount();
+                document.getElementById('p_unit').value = p.unit || '';
+                document.getElementById('p_stock').value = p.stockQuantity || 0;
+                document.getElementById('p_status').value = p.status || 'Active'; 
+                
+                const imgArray = (p.images && p.images.length > 0) ? p.images : [p.image || ''];
+                for(let i=1; i<=8; i++) { document.getElementById('p_img_'+i).value = imgArray[i-1] || ''; }
+
+                document.getElementById('p_desc').value = p.description;
+                new bootstrap.Modal(document.getElementById('productModal')).show();
+            },
+
+            async saveProduct() {
+                const form = document.getElementById('productForm'); if(!form.checkValidity()) { form.reportValidity(); return; }
+                const mrp = parseFloat(document.getElementById('p_mrp').value); const price = parseFloat(document.getElementById('p_price').value);
+                if (price > mrp) { this.showToast('Selling Price cannot be greater than Original MRP.', 'danger'); return; }
+                
+                const images = [];
+                for(let i=1; i<=8; i++) { const val = document.getElementById('p_img_'+i).value.trim(); if(val) images.push(val); }
+                if(images.length === 0) { this.showToast('At least 1 Main Image URL is required.', 'danger'); return; }
+
+                const isNew = !document.getElementById('p_id').value; 
+                const id = isNew ? Date.now() : parseInt(document.getElementById('p_id').value);
+                
+                const prod = {
+                    id: id, sellerId: this.user.uid, name: document.getElementById('p_name').value, 
+                    category: document.getElementById('p_category').value, status: document.getElementById('p_status').value, 
+                    originalPrice: mrp, price: price, discount: Math.round(((mrp - price) / mrp) * 100) || 0,
+                    unit: document.getElementById('p_unit').value, stockQuantity: parseInt(document.getElementById('p_stock').value),
+                    image: images[0], images: images, description: document.getElementById('p_desc').value, rating: 4.5 
+                };
+                if (isNew) prod.createdAt = new Date().toISOString();
+                
+                await db.ref('products/' + id).set(prod);
+                bootstrap.Modal.getInstance(document.getElementById('productModal')).hide(); 
+                this.showToast(isNew ? 'Product added successfully!' : 'Product updated successfully!', 'success');
+            },
+
+            async deleteProduct(id) { if(confirm('Permanently delete this product?')) { await db.ref('products/' + id).remove(); this.showToast('Product deleted.', 'success'); } },
+
+            listenToOrders() {
+                db.ref('orders').on('value', snap => {
+                    const data = snap.val(); const allOrders = data ? Object.values(data) : [];
+                    this.myOrders = allOrders.filter(o => {
+                        if (o.status === 'Open') return false; 
+                        if (o.fulfillerId === this.user.uid) return true;
+                        if (!o.fulfillerId && !(o.rejectedBy && o.rejectedBy[this.user.uid])) {
+                            if (!o.items) return false; return o.items.some(item => this.myProducts.some(p => p.id === item.id));
+                        }
+                        return false;
+                    }).sort((a,b) => b.timestamp - a.timestamp);
+
+                    this.openOrders = allOrders.filter(o => o.status === 'Open' && !(o.rejectedBy && o.rejectedBy[this.user.uid])).sort((a,b) => b.statusUpdatedAt - a.statusUpdatedAt);
+                    this.updateStatsAndWallet(); this.renderOrders(); this.renderOpenOrders();
+                });
+            },
+
+            filterOrders(statusType, el) {
+                this.currentOrderFilter = statusType;
+                document.querySelectorAll('.order-filter-btn').forEach(btn => { btn.classList.remove('active', 'btn-primary'); btn.classList.add('text-muted'); });
+                el.classList.add('active', 'btn-primary'); el.classList.remove('text-muted');
+                this.renderOrders();
+            },
+
+            renderOrders() {
+                const list = document.getElementById('ordersList');
+                let filtered = this.currentOrderFilter === 'Active' ? this.myOrders.filter(o => ['Placed', 'Confirmed', 'Processing', 'Ready for Pickup', 'Driver Assigned', 'Picked Up', 'Out for Delivery'].includes(o.status)) :
+                               this.currentOrderFilter === 'Completed' ? this.myOrders.filter(o => o.status === 'Delivered') : this.myOrders.filter(o => o.status === 'Cancelled');
+
+                if(!filtered.length) { list.innerHTML = `<div class="col-12 text-center py-5 text-muted"><div class="d-inline-flex p-4 rounded-circle bg-light mb-3"><i class="fas fa-box-open fa-3x"></i></div><h5>No orders found.</h5></div>`; return; }
+                
+                list.innerHTML = filtered.map(o => {
+                    let itemsToFulfill = !o.fulfillerId ? o.items.filter(item => this.myProducts.some(p => p.id === item.id)) : o.items;
+                    const orderTotal = itemsToFulfill.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+                    let actionBtn = '', statusColor = 'primary';
+                    
+                    if (o.status === 'Placed') actionBtn = `<button class="btn btn-success fw-bold w-100 mb-2 py-2" onclick="app.updateOrderStatus('${o.orderId}', 'Confirmed')"><i class="fas fa-check me-1"></i> Accept</button>`;
+                    else if (o.status === 'Confirmed') actionBtn = `<button class="btn btn-primary fw-bold w-100 py-2" onclick="app.updateOrderStatus('${o.orderId}', 'Processing')">Start Packing</button>`;
+                    else if (o.status === 'Processing') actionBtn = `<button class="btn btn-warning fw-bold text-dark w-100 py-2" onclick="app.markReadyForPickup('${o.orderId}')">Ready for Pickup</button>`;
+                    else if (o.status === 'Ready for Pickup') { actionBtn = `<div class="bg-light p-2 rounded text-center border text-main"><small class="d-block mb-1">Pickup OTP</small><h4 class="mb-0 fw-bold tracking-widest">${o.pickupOtp || 'N/A'}</h4></div>`; statusColor = 'warning'; }
+                    else if (['Picked Up', 'Out for Delivery'].includes(o.status)) { actionBtn = `<div class="bg-primary-light text-primary p-2 rounded text-center fw-bold"><i class="fas fa-truck"></i> On the way</div>`; statusColor = 'primary'; }
+                    else if (o.status === 'Delivered') statusColor = 'success'; else if (o.status === 'Cancelled') statusColor = 'danger';
+
+                    return `
+                    <div class="col-xl-6">
+                        <div class="order-card">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div><h6 class="mb-0 fw-bold text-main">#${o.orderId}</h6><small class="text-muted">${new Date(o.timestamp).toLocaleString()}</small></div>
+                                <span class="badge bg-${statusColor}-light text-${statusColor} border border-${statusColor} border-opacity-25 px-3 py-2 rounded-pill">${o.status}</span>
+                            </div>
+                            <div class="row align-items-center mt-3">
+                                <div class="col-7 border-end pe-3">
+                                    <small class="text-muted fw-bold mb-2 d-block">ORDER ITEMS</small>
+                                    ${itemsToFulfill.map(i => `<div class="d-flex align-items-center mb-2"><img src="${i.image}" class="order-item-img me-3"><div><span class="d-block fw-bold text-main text-truncate" style="max-width:150px;">${i.name}</span><small class="text-muted">Qty: ${i.quantity}</small></div></div>`).join('')}
+                                </div>
+                                <div class="col-5 ps-3 text-center">
+                                    <h4 class="text-success fw-bold mb-3">₹${(orderTotal * (1 - this.platformCommissionRate)).toLocaleString()}</h4>
+                                    ${actionBtn}
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                }).join('');
+            },
+
+            renderOpenOrders() {
+                const list = document.getElementById('openOrdersList'); const badge = document.getElementById('openOrdersBadge');
+                if (this.openOrders.length > 0) { badge.style.display = 'inline-block'; badge.innerText = this.openOrders.length; } else badge.style.display = 'none';
+                if(!this.openOrders.length) { list.innerHTML = `<div class="col-12 text-center py-5 text-muted"><div class="d-inline-flex p-4 rounded-circle bg-light mb-3"><i class="fas fa-radar fa-3x"></i></div><h5 class="fw-bold text-main">No open orders right now.</h5></div>`; return; }
+                
+                list.innerHTML = this.openOrders.map(o => {
+                    const orderTotal = o.items.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+                    return `
+                    <div class="col-xl-6">
+                        <div class="order-card open-order">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div><h6 class="mb-0 fw-bold text-main">#${o.orderId}</h6><small class="text-muted"><i class="fas fa-clock text-warning"></i> Open for grab</small></div>
+                                <span class="badge bg-danger px-3 py-2 rounded-pill"><i class="fas fa-bolt"></i> HOT</span>
+                            </div>
+                            <div class="row align-items-center mt-3">
+                                <div class="col-7 border-end pe-3">
+                                    ${o.items.map(i => `<div class="d-flex align-items-center mb-2"><img src="${i.image}" class="order-item-img me-3"><div><span class="d-block fw-bold text-main text-truncate" style="max-width:150px;">${i.name}</span><small class="text-muted">Qty: ${i.quantity}</small></div></div>`).join('')}
+                                </div>
+                                <div class="col-5 ps-3 text-center">
+                                    <button class="btn btn-warning w-100 fw-bold text-dark py-2 shadow-sm rounded-pill" onclick="app.acceptOpenOrder('${o.orderId}')">Accept Order</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                }).join('');
+            },
+
+            acceptOpenOrder(orderId) {
+                document.getElementById('loader').style.display = 'flex';
+                db.ref('orders/' + orderId).transaction((order) => {
+                    if (order && order.status === 'Open') { order.status = 'Confirmed'; order.fulfillerId = this.user.uid; order.statusUpdatedAt = Date.now(); return order; }
+                    return; 
+                }, (error, committed, snapshot) => {
+                    document.getElementById('loader').style.display = 'none';
+                    if (error) this.showToast('Error.', 'danger');
+                    else if (!committed) this.showToast('Another seller took this order.', 'warning');
+                    else { this.showToast('Order Accepted!', 'success'); this.switchTab('orders', document.querySelectorAll('.nav-item-link')[2]); }
+                });
+            },
+
+            async updateOrderStatus(orderId, status) { await db.ref('orders/' + orderId).update({ status: status, statusUpdatedAt: Date.now() }); this.showToast('Order updated.', 'success'); },
+            async markReadyForPickup(orderId) {
+                const pickupOtp = Math.floor(1000 + Math.random() * 9000).toString(); const deliveryOtp = Math.floor(1000 + Math.random() * 9000).toString();
+                await db.ref('orders/' + orderId).update({ status: 'Ready for Pickup', pickupOtp: pickupOtp, deliveryOtp: deliveryOtp, pickupAddress: this.profile.pickupAddress ? (this.profile.pickupAddress.address + ', ' + this.profile.pickupAddress.city) : this.profile.businessName, sellerPhone: this.profile.mobile, storeName: this.profile.businessName, statusUpdatedAt: Date.now() });
+                this.showToast('Ready for pickup! Driver notified.', 'success');
+            },
+
+            listenToWithdrawals() {
+                db.ref('withdrawals').orderByChild('uid').equalTo(this.user.uid).on('value', snap => {
+                    const data = snap.val(); this.withdrawals = data ? Object.values(data) : []; this.withdrawals.sort((a,b) => b.timestamp - a.timestamp);
+                    this.renderWithdrawals(); this.updateStatsAndWallet(); 
+                });
+            },
+
+            renderWithdrawals() {
+                const list = document.getElementById('transactionsList');
+                if(!this.withdrawals.length) { list.innerHTML = '<div class="text-center py-5 text-muted">No recent transactions.</div>'; return; }
+                list.innerHTML = this.withdrawals.map(w => {
+                    let badge = w.status === 'Pending' ? 'warning' : (w.status === 'Approved' || w.status === 'Paid' ? 'success' : 'danger');
+                    return `
+                    <div class="list-group-item d-flex justify-content-between align-items-center py-4 border-0 border-bottom bg-transparent">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-light p-3 rounded-circle me-3"><i class="fas fa-arrow-up-right-from-square text-primary"></i></div>
+                            <div><strong class="d-block text-main">Bank Withdrawal</strong><small class="text-muted">${new Date(w.timestamp).toLocaleString()}</small></div>
+                        </div>
+                        <div class="text-end">
+                            <strong class="d-block fs-5 text-main">-₹${w.amount.toLocaleString()}</strong>
+                            <span class="badge bg-${badge}-light text-${badge} border border-${badge} border-opacity-25 px-2 mt-1 rounded-pill">${w.status}</span>
+                        </div>
+                    </div>`;
+                }).join('');
+            },
+
+            updateStatsAndWallet() {
+                document.getElementById('statOrders').innerText = this.myOrders.length;
+                const pending = this.myOrders.filter(o => ['Placed', 'Confirmed', 'Processing', 'Ready for Pickup'].includes(o.status));
+                document.getElementById('statPending').innerText = pending.length;
+                const badge = document.getElementById('newOrdersBadge');
+                if(pending.length > 0) { badge.style.display = 'inline-block'; badge.innerText = pending.length; } else badge.style.display = 'none';
+
+                const delivered = this.myOrders.filter(o => o.status === 'Delivered');
+                let totalEarned = 0;
+                delivered.forEach(o => {
+                    let itemsToFulfill = !o.fulfillerId ? o.items.filter(item => this.myProducts.some(p => p.id === item.id)) : o.items;
+                    totalEarned += itemsToFulfill.reduce((sum, i) => sum + (i.price * i.quantity), 0) * (1 - this.platformCommissionRate); 
+                });
+                document.getElementById('statRevenue').innerText = '₹' + totalEarned.toLocaleString();
+
+                let totalWithdrawn = 0;
+                this.withdrawals.forEach(w => { if(['Approved', 'Paid', 'Pending'].includes(w.status)) totalWithdrawn += w.amount; });
+                let availableBalance = Math.max(0, totalEarned - totalWithdrawn);
+                this.availableBalance = availableBalance;
+                document.getElementById('walletBalance').innerText = '₹' + availableBalance.toLocaleString();
+                this.renderSalesChart(delivered);
+            },
+
+            // 3D Chart Rendering with Shadow & Animations
+            renderSalesChart(deliveredOrders) {
+                const ctx = document.getElementById('salesChart').getContext('2d'); if(!ctx) return;
+                if(this.salesChartInstance) this.salesChartInstance.destroy();
+                
+                const labels = [], dataPoints = [0, 0, 0, 0, 0, 0, 0], days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+                for(let i=6; i>=0; i--) { const d = new Date(); d.setDate(d.getDate() - i); labels.push(days[d.getDay()]); }
+
+                let totalChartRev = 0, totalChartOrd = 0;
+                deliveredOrders.forEach(o => {
+                    const d1 = new Date(new Date().setHours(0,0,0,0)); const d2 = new Date(new Date(o.statusUpdatedAt || o.timestamp).setHours(0,0,0,0));
+                    const diffDays = Math.ceil(Math.abs(d1 - d2) / (1000 * 60 * 60 * 24));
+                    let itemsToFulfill = !o.fulfillerId ? o.items.filter(item => this.myProducts.some(p => p.id === item.id)) : o.items;
+                    const earning = itemsToFulfill.reduce((sum, item) => sum + (item.price * item.quantity), 0) * (1 - this.platformCommissionRate);
+
+                    if(diffDays <= 6) { dataPoints[6 - diffDays] += earning; totalChartRev += earning; totalChartOrd++; }
+                });
+                
+                document.getElementById('chartTotalRevenue').innerText = '₹' + totalChartRev.toLocaleString();
+                document.getElementById('chartTotalOrders').innerText = totalChartOrd;
+
+                // Deep Gradient
+                const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                gradient.addColorStop(0, 'rgba(67, 97, 238, 0.6)'); gradient.addColorStop(1, 'rgba(67, 97, 238, 0.01)');
+                
+                // Chart Shadow Plugin for 3D effect
+                const shadowPlugin = {
+                    id: 'shadowPlugin',
+                    beforeDatasetsDraw: (chart) => {
+                        chart.ctx.save();
+                        chart.ctx.shadowColor = 'rgba(67, 97, 238, 0.5)';
+                        chart.ctx.shadowBlur = 20;
+                        chart.ctx.shadowOffsetX = 0;
+                        chart.ctx.shadowOffsetY = 15;
+                    },
+                    afterDatasetsDraw: (chart) => { chart.ctx.restore(); }
+                };
+
+                this.salesChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: { labels: labels, datasets: [{ label: 'Earnings (₹)', data: dataPoints, borderColor: '#4361ee', backgroundColor: gradient, borderWidth: 4, fill: true, tension: 0.4, pointBackgroundColor: '#fff', pointBorderColor: '#4361ee', pointBorderWidth: 3, pointRadius: 5, pointHoverRadius: 8 }] },
+                    options: { 
+                        responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+                        animation: {
+                            duration: 2500,
+                            easing: 'easeOutQuart'
+                        },
+                        plugins: { legend: { display: false }, tooltip: { backgroundColor: '#2b3674', titleFont: { size: 13, family: 'Plus Jakarta Sans' }, bodyFont: { size: 14, weight: 'bold', family: 'Plus Jakarta Sans' }, padding: 12, cornerRadius: 8, displayColors: false } },
+                        scales: { x: { grid: { display: false }, ticks: { color: '#8f9bba', font: { family: 'Plus Jakarta Sans' } } }, y: { beginAtZero: true, grid: { color: '#edf2f7', borderDash: [5, 5] }, ticks: { color: '#8f9bba', font: { family: 'Plus Jakarta Sans' }, callback: value => '₹' + value } } }
+                    },
+                    plugins: [shadowPlugin]
+                });
+            },
+
+            requestWithdrawal() {
+                if((this.availableBalance || 0) < 500) return this.showToast('Minimum withdrawal is ₹500', 'warning');
+                document.getElementById('withdrawalModalAmount').innerText = '₹' + (this.availableBalance || 0).toLocaleString();
+                if (this.profile && this.profile.bankDetails) { document.getElementById('withdrawAccountNo').value = this.profile.bankDetails.accountNo || ''; document.getElementById('withdrawIfsc').value = this.profile.bankDetails.ifsc || ''; }
+                new bootstrap.Modal(document.getElementById('withdrawalModal')).show();
+            },
+
+            async submitWithdrawal() {
+                const bal = this.availableBalance || 0; if(bal < 500) return;
+                const acNo = document.getElementById('withdrawAccountNo').value.trim(), ifsc = document.getElementById('withdrawIfsc').value.trim().toUpperCase();
+                if(!acNo || !ifsc) return this.showToast('Enter Account & IFSC', 'warning');
+
+                try {
+                    document.getElementById('loader').style.display = 'flex';
+                    await db.ref('withdrawals').push({ uid: this.user.uid, role: 'seller', amount: bal, accountNumber: acNo, ifscCode: ifsc, status: 'Pending', timestamp: Date.now() });
+                    document.getElementById('loader').style.display = 'none';
+                    bootstrap.Modal.getInstance(document.getElementById('withdrawalModal')).hide(); this.showToast('Withdrawal request submitted!', 'success');
+                } catch(e) { document.getElementById('loader').style.display = 'none'; this.showToast(e.message, 'danger'); }
+            },
+
+            listenToSellers() {
+                db.ref('sellers').on('value', snap => {
+                    const data = snap.val();
+                    if(data) { this.otherSellers = Object.entries(data).map(([uid, s]) => ({...s, uid})).filter(s => s.status === 'verified' && s.uid !== this.user.uid); this.renderSellers(); }
+                });
+            },
+
+            renderSellers() {
+                const grid = document.getElementById('sellerNetworkGrid');
+                if(!this.otherSellers.length) { grid.innerHTML = '<div class="col-12 text-center py-5 text-muted"><div class="d-inline-flex p-4 rounded-circle bg-light mb-3"><i class="fas fa-users-slash fa-3x"></i></div><p>No verified sellers found yet.</p></div>'; return; }
+
+                grid.innerHTML = this.otherSellers.map(s => {
+                    const locationText = (s.pickupAddress && s.pickupAddress.city) ? `${s.pickupAddress.city}, ${s.pickupAddress.state}` : 'Location N/A';
+                    return `
+                    <div class="col-md-6 col-xl-4">
+                        <div class="premium-card h-100 text-center position-relative">
+                            <span class="position-absolute top-0 end-0 m-3 badge bg-success-light text-success border border-success border-opacity-25 rounded-pill px-3 py-1"><i class="fas fa-check-circle me-1"></i> Verified</span>
+                            <div class="d-inline-flex align-items-center justify-content-center bg-primary-light text-primary rounded-circle mb-3 fw-bold fs-3" style="width:70px; height:70px;">
+                                ${s.businessName ? s.businessName.charAt(0).toUpperCase() : 'S'}
+                            </div>
+                            <h5 class="fw-bold text-main text-truncate px-3 mb-1" title="${s.businessName}">${s.businessName}</h5>
+                            <p class="text-muted small mb-3"><i class="fas fa-user-tie me-1"></i> ${s.ownerName || 'Owner Name N/A'}</p>
+                            <div class="bg-light p-2 rounded-3 text-muted small mb-4 fw-bold"><i class="fas fa-map-marker-alt text-danger me-1"></i> ${locationText}</div>
+                        </div>
+                    </div>`;
+                }).join('');
+            },
+
+            showToast(message, type = 'info') {
+                const icons = { success: 'fa-check-circle', danger: 'fa-exclamation-circle', warning: 'fa-triangle-exclamation', info: 'fa-info-circle' };
+                const toastHtml = `
+                    <div class="toast border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" style="border-radius: var(--radius-sm); overflow: hidden;">
+                        <div class="d-flex align-items-center p-3 bg-white border-start border-4 border-${type}">
+                            <i class="fas ${icons[type]} text-${type} fs-4 me-3"></i>
+                            <div class="toast-body p-0 fw-bold text-main flex-grow-1">${message}</div>
+                            <button type="button" class="btn-close ms-2" data-bs-dismiss="toast"></button>
+                        </div>
+                    </div>`;
+                const container = document.querySelector('.toast-container'); container.insertAdjacentHTML('beforeend', toastHtml);
+                const toastEl = container.lastElementChild; new bootstrap.Toast(toastEl, { delay: 4000 }).show();
+                setTimeout(() => toastEl.remove(), 4500);
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => app.init());
+    </script>
+</body>
+</html>
